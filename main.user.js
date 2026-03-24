@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         推荐屏蔽工具
 // @namespace    https://greasyfork.org/zh-CN/users/1573237
-// @version      1.3.4
+// @version      1.3.5
 // @description  隐藏B站/知乎/豆包导航栏、搜索框、首页、侧边栏推荐
 // @author       zwb299
 // @match        *://*.bilibili.com/*
@@ -43,19 +43,17 @@
     //===============================函数区===============================
     
     function getStatusText(isOn) {
-        if (isOn) {
+        if (isOn)
             return '🟢 开启';
-        } else {
+        else
             return '🔴 关闭';
-        }
     }
 
 
     function addToggleMenu(name, key, currentValue) {
         const text = name + ' | ' + getStatusText(currentValue);
         GM_registerMenuCommand(text, function () {
-            const newValue = !currentValue;
-            GM_setValue(key, newValue);
+            GM_setValue(key, !currentValue);
             location.reload();
         });
     }
