@@ -6,8 +6,8 @@
 // @author       zwb299
 // @match        *://*.bilibili.com/*
 // @match        *://*.zhihu.com/*
-// @require      https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js
 // @icon         https://cdn.simpleicons.org/adblock
+// @require      https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js
 // @grant        GM_registerMenuCommand
 // @grant        GM_getValue
 // @grant        GM_setValue
