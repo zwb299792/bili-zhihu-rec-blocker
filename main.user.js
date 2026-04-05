@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         recommendation-blocker
 // @namespace    https://greasyfork.org/zh-CN/users/1573237
-// @version      1.3.7
+// @version      1.3.8
 // @description  隐藏常用网站导航栏、搜索框、首页、侧边栏推荐
 // @author       zwb299
 // @match        *://*.bilibili.com/*
@@ -39,9 +39,9 @@
     observer.observe(document.body, {childList: true, subtree: true});
 
 
-    
+
     //===============================函数区===============================
-    
+
     function getStatusText(isOn) {
         if (isOn)
             return '🟢 开启';
@@ -58,7 +58,7 @@
         });
     }
 
-    
+
     function simplifyBilibili(){
         // 导航栏
         $(".left-entry").css('visibility', 'hidden');
@@ -110,10 +110,10 @@
         $(".Post-Sub").remove();
     }
 
-    
+
     function simplifyDoubao(){
         // 首页
         $("#experiment-guidance-suggestions").remove();
     }
-    
+
 })();
