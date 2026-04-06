@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         recommendation-blocker
 // @namespace    https://greasyfork.org/zh-CN/users/1573237
-// @version      1.3.10
+// @version      1.3.11
 // @description  隐藏常用网站导航栏、搜索框、首页、侧边栏推荐
 // @author       zwb299
 // @match        *://*.bilibili.com/*
@@ -13,6 +13,7 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @license      MIT
+// @run-at       document-start
 // ==/UserScript==
 
 (function() {
@@ -43,16 +44,12 @@
     //===============================函数区===============================
 
     function getStatusText(isOn) {
-        if (isOn) {
-            return '🟢 开启';
-        } else {
-            return '🔴 关闭';
-        }
+        return isOn ? "🟢 开启" : "🔴 关闭";
     }
 
 
     function addToggleMenu(name, key, currentValue) {
-        const text = name + ' | ' + getStatusText(currentValue);
+        const text = name + " | " + getStatusText(currentValue);
         GM_registerMenuCommand(text, function () {
             GM_setValue(key, !currentValue);
             location.reload();
