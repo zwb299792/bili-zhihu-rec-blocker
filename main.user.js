@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         recommendation-blocker
 // @namespace    https://greasyfork.org/zh-CN/users/1573237
-// @version      1.3.11
+// @version      1.3.12
 // @description  隐藏常用网站导航栏、搜索框、首页、侧边栏推荐
 // @author       zwb299
 // @match        *://*.bilibili.com/*
@@ -13,7 +13,6 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @license      MIT
-// @run-at       document-start
 // ==/UserScript==
 
 (function() {
