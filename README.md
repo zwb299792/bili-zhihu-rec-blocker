@@ -1,5 +1,5 @@
 # Recommendation Blocker
-> 隐藏B站/知乎/豆包导航栏、搜索框、首页、侧边栏推荐
+> 隐藏常用网站导航栏、搜索框、首页、侧边栏推荐  🔗 [GitHub 仓库](https://github.com/zwb101325/recommendation-blocker)
 
 ## ✨ 功能
 - 隐藏 B站 导航栏、搜索框、首页、侧边栏推荐
