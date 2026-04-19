@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         recommendation-blocker
 // @namespace    http://tampermonkey.net/
-// @version      1.4.1
+// @version      1.4.2
 // @description  屏蔽常用网站导航栏、搜索框、首页、侧边栏推荐
 // @author       You
 // @match        *://*.bilibili.com/*
