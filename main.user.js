@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         recommendation-blocker
 // @namespace    http://tampermonkey.net/
-// @version      1.4.0
+// @version      1.4.1
 // @description  屏蔽常用网站导航栏、搜索框、首页、侧边栏推荐
 // @author       You
 // @match        *://*.bilibili.com/*
@@ -23,21 +23,28 @@
     const enableBilibili = GM_getValue('enableBilibili', true);
     const enableZhihu = GM_getValue('enableZhihu', true);
     const enableDoubao = GM_getValue('enableDoubao', true);
-
+    
     addToggleMenu('B站屏蔽', 'enableBilibili', enableBilibili);
     addToggleMenu('知乎屏蔽', 'enableZhihu', enableZhihu);
     addToggleMenu('豆包屏蔽', 'enableDoubao', enableDoubao);
 
-    if (enableBilibili) simplifyBilibili();
-    if (enableZhihu) simplifyZhihu();
-    if (enableDoubao) simplifyDoubao();
+    let simplifyCurrentSite = null;
+    if (location.hostname.includes('bilibili.com') && enableBilibili) simplifyCurrentSite = simplifyBilibili;
+    if (location.hostname.includes('zhihu.com') && enableZhihu) simplifyCurrentSite = simplifyZhihu;
+    if (location.hostname.includes('doubao.com') && enableDoubao) simplifyCurrentSite = simplifyDoubao;
+    if (!simplifyCurrentSite) return;
 
-    const observer = new MutationObserver((mutations) => {
-        if (enableBilibili) simplifyBilibili();
-        if (enableZhihu) simplifyZhihu();
-        if (enableDoubao) simplifyDoubao();
+    simplifyCurrentSite();
+
+    let observerTimer = null;
+    const observer = new MutationObserver(() => {
+        clearTimeout(observerTimer);
+        observerTimer = setTimeout(() => {
+            simplifyCurrentSite();
+            observerTimer = null;
+        }, 150);
     });
-    observer.observe(document.body, {childList: true, subtree: true});
+    if (document.body) observer.observe(document.body, {childList: true, subtree: true});
 
 
 
@@ -54,6 +61,15 @@
             GM_setValue(key, !currentValue);
             location.reload();
         });
+    }
+
+
+    function ensureStyle(id, cssText) {
+        if (document.getElementById(id)) return;
+        const style = document.createElement('style');
+        style.id = id;
+        style.textContent = cssText;
+        document.head.appendChild(style);
     }
 
 
@@ -88,7 +104,7 @@
         $(".css-1vbrp2j").css('visibility', 'hidden');
 
         // 搜索框
-        $('<style>.Input::placeholder{color:transparent}</style>').appendTo('head');
+        ensureStyle('rb-zhihu-placeholder-style', '.Input::placeholder{color:transparent}');
         $(".SearchBar-label:first").hide();
         $('[id*="AutoComplete1-topSearch"]').hide();
 
