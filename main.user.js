@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         recommendation-blocker
 // @namespace    http://tampermonkey.net/
-// @version      1.4.3
+// @version      1.4.4
 // @description  屏蔽常用网站导航栏、搜索框、首页、侧边栏推荐
 // @author       You
 // @match        *://*.bilibili.com/*
 // @match        *://*.zhihu.com/*
 // @match        *://*.doubao.com/*
 // @icon         https://cdn.simpleicons.org/adblock
-// @run-at       document-end
-// @require      https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js
+// @run-at       document-start
+// @noframes
 // @grant        GM_registerMenuCommand
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -18,7 +18,6 @@
 
 (function () {
     'use strict';
-    /* global $ */
 
     // ============================================================
     // #region 初始化
@@ -43,7 +42,8 @@
     if (!simplifyCurrentSite) return;
 
     simplifyCurrentSite();
-
+    startObserver();
+    
     // #endregion
 
 
@@ -52,17 +52,26 @@
     // #region 动态监听
     // ============================================================
 
-    let observerTimer = null;
-    const observer = new MutationObserver(() => {
-        clearTimeout(observerTimer);
-        observerTimer = setTimeout(() => {
-            simplifyCurrentSite();
-            observerTimer = null;
-        }, 150);
-    });
+    function startObserver() {
+        let observerTimer = null;
 
-    if (document.body) observer.observe(document.body, {childList: true, subtree: true });
-        
+        const observer = new MutationObserver(() => {
+            clearTimeout(observerTimer);
+            observerTimer = setTimeout(simplifyCurrentSite, 150);
+        });
+
+        function tryObserve() {
+            if (!document.body) {
+                requestAnimationFrame(tryObserve);
+                return;
+            }
+
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+
+        tryObserve();
+    }
+
     // #endregion
 
 
@@ -72,12 +81,17 @@
     // ============================================================
 
     function ensureStyle(id, cssText) {
-        if (document.getElementById(id)) return;
-        const style = document.createElement('style');
-        style.id = id;
+        let style = document.getElementById(id);
+
+        if (!style) {
+            style = document.createElement('style');
+            style.id = id;
+            (document.head || document.documentElement).appendChild(style);
+        }
+
         style.textContent = cssText;
-        document.head.appendChild(style);
     }
+
 
     function getStatusText(isOn) {
         return isOn ? '开启' : '关闭';
@@ -174,7 +188,7 @@
                 background: white;
                 border-radius: 50%;
                 transition: 0.2s;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             }
 
             .rb-switch input:checked + .rb-slider {
@@ -276,13 +290,14 @@
     function bindSettingsEvents(overlay) {
         const sites = [
             { id: 'Bilibili', checkbox: 'rb-toggle-bilibili', status: 'rb-status-bilibili' },
-            { id: 'Zhihu',    checkbox: 'rb-toggle-zhihu',    status: 'rb-status-zhihu'    },
-            { id: 'Doubao',   checkbox: 'rb-toggle-doubao',   status: 'rb-status-doubao'   },
+            { id: 'Zhihu', checkbox: 'rb-toggle-zhihu', status: 'rb-status-zhihu' },
+            { id: 'Doubao', checkbox: 'rb-toggle-doubao', status: 'rb-status-doubao' },
         ];
 
-        sites.forEach(({ id, checkbox, status }) => {
+        sites.forEach(({ checkbox, status }) => {
             const cb = document.getElementById(checkbox);
             const st = document.getElementById(status);
+
             cb.addEventListener('change', () => {
                 st.textContent = getStatusText(cb.checked);
             });
@@ -322,61 +337,69 @@
     // ============================================================
 
     function simplifyBilibili() {
-        // 导航栏
-        $('.left-entry__title').attr('href', 'https://search.bilibili.com/');
-        $('.left-entry').css('visibility', 'hidden');
-        $('.right-entry').css('visibility', 'hidden');
-        $('.entry-title').css('visibility', 'visible');
-        $('.mini-header__logo').css('visibility', 'visible');
-        $('.header-entry-mini').css('visibility', 'visible');
+        ensureStyle('rb-bilibili-style', `
+            /* 导航栏 */
+            .left-entry { visibility: hidden !important; }
+            .right-entry { visibility: hidden !important; }
+            .entry-title { visibility: visible !important; }
+            .mini-header__logo { visibility: visible !important; }
+            .header-entry-mini { visibility: visible !important; }
 
-        // 搜索框
-        $('.nav-search-input').attr('placeholder', '');
-        $('.trending').hide();
+            /* 搜索框 */
+            .nav-search-input::placeholder { color: transparent !important; }
+            .trending { display: none !important; }
 
-        // 首页
-        $('.feed2').hide();
+            /* 首页 */
+            .feed2 { display: none !important; }
 
-        // 视频页
-        $('.bpx-player-ending-related').hide();
-        $('.recommend-list-v1').hide();
-        $('.pop-live-small-mode').hide();
-        $('.video-pod__body').css('max-height', '450px');
+            /* 视频页 */
+            .bpx-player-ending-related { display: none !important; }
+            .recommend-list-v1 { display: none !important; }
+            .pop-live-small-mode { display: none !important; }
+            .video-pod__body { max-height: 450px !important; }
+        `);
+
+        document.querySelector('.left-entry__title')?.setAttribute('href', 'https://search.bilibili.com/');
     }
 
 
     function simplifyZhihu() {
-        // 导航栏
-        $('.css-lgijre > a').attr('href', 'https://www.zhihu.com/search');
-        $('.css-72pd91').css('visibility', 'hidden');
-        $('.css-1vbrp2j').css('visibility', 'hidden');
+        ensureStyle('rb-zhihu-style', `
+            /* 导航栏 */
+            .css-72pd91 { visibility: hidden !important; }
+            .css-1vbrp2j { visibility: hidden !important; }
 
-        // 搜索框
-        ensureStyle('rb-zhihu-placeholder-style', '.Input::placeholder{color:transparent}');
-        $('.SearchBar-label:first').hide();
-        $('[id*="AutoComplete1-topSearch"]').hide();
+            /* 搜索框 */
+            .Input::placeholder { color: transparent !important; }
+            .SearchBar-label:first-of-type { display: none !important; }
+            [id*="AutoComplete1-topSearch"] { display: none !important; }
 
-        // 首页
-        $('.Topstory-container').remove();
+            /* 首页 */
+            .Topstory-container { display: none !important; }
 
-        // 搜索页
-        $('.css-knqde').remove();
-        $('.SearchMain').width('960px');
+            /* 搜索页 */
+            .css-knqde { display: none !important; }
+            .SearchMain { width: 960px !important; }
 
-        // 问题页
-        $('.Question-sideColumn').remove();
-        $('.Question-mainColumn').width('960px');
+            /* 问题页 */
+            .Question-sideColumn { display: none !important; }
+            .Question-mainColumn { width: 960px !important; }
 
-        // 专栏页
-        $('.Post-Row-Content-right').remove();
-        $('.Post-Row-Content-left').width('960px');
-        $('.Post-Sub').remove();
+            /* 专栏页 */
+            .Post-Row-Content-right { display: none !important; }
+            .Post-Row-Content-left { width: 960px !important; }
+            .Post-Sub { display: none !important; }
+        `);
+
+         document.querySelector('.css-lgijre > a')?.setAttribute('href', 'https://www.zhihu.com/search');
     }
 
 
     function simplifyDoubao() {
-        // 首页
-        $('#experiment-guidance-suggestions').remove();
+        ensureStyle('rb-doubao-style', `
+            /* 首页 */
+            #experiment-guidance-suggestions { display: none !important; }
+        `);
     }
 
     // #endregion
